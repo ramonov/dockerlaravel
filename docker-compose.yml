@@ -1,0 +1,68 @@
+version: "3"
+
+services:
+  laravelapp:
+    build: ./build
+    container_name: laravelapp
+    restart: unless-stopped
+    tty: true
+    working_dir: /var/www
+    depends_on:
+      - laraveldb
+    volumes:
+      - ./code:/var/www
+      - ./build/php/local.ini:/usr/local/etc/php/conf.d/local.ini
+    networks:
+      - laravel-network
+
+  laraveldb:
+    image: mysql:5.7.22
+    container_name: laraveldb
+    restart: unless-stopped
+    ports:
+      - "33061:3306"
+    environment:
+      MYSQL_DATABASE: laravel_db
+      MYSQL_ROOT_PASSWORD: P@ssw0rd
+      MYSQL_USER: laravel_user
+      MYSQL_USER_PASSWORD: userP@ssw0rd
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mysql
+    volumes:
+      - laraveldb:/var/lib/mysql/
+      - ./build/mysql/my.cnf:/etc/mysql/my.cnf
+    networks:
+      - laravel-network
+
+  laravelweb:
+    image: nginx
+    container_name: laravelweb
+    ports:
+      - "8081:80"
+      #- "443:443"
+    volumes:
+      - ./build/nginx/conf.d/:/etc/nginx/conf.d/
+      - ./code:/var/www
+      - ./build/nginx/log:/var/log/nginx
+    depends_on:
+      - laravelapp
+    networks:
+      - laravel-network
+
+  laravelredis:
+    image: redis
+    volumes:
+        - ./build/data/redis:/datadoc
+    container_name: laravelredis
+    ports:
+        - "6379:6379"
+    networks:
+        - laravel-network   
+#Docker Networks
+networks:
+  laravel-network:
+    driver: bridge
+#Volumes
+volumes:
+  laraveldb:
+    driver: local
