@@ -24,7 +24,7 @@ services:
           - ${NETWORK}
 
   laraveldb:
-    image: mysql:${MYSQL_DATABASE}
+    image: mysql:${MYSQL_VERSION}
     container_name: ${CONTAINER_NAME_PREFIX}db
     restart: unless-stopped
     ports:
