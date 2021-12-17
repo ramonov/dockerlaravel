@@ -1,68 +1,82 @@
-version: "3"
+version: "3.8"
 
 services:
   laravelapp:
-    build: ./build
-    container_name: laravelapp
+    env_file: .env
+    container_name: ${CONTAINER_NAME_PREFIX}app
+    build:
+      context: ./build
+      args:
+        PROJECT_PATH: ${PROJECT_PATH}
+        PHP_FPM_VERSION: ${PHP_FPM_VERSION}
+        INSTALL_NODEJS: ${INSTALL_NODEJS}
     restart: unless-stopped
     tty: true
-    working_dir: /var/www
+    working_dir: ${PROJECT_PATH}
     depends_on:
       - laraveldb
     volumes:
-      - ./code:/var/www
+      - ./code:${PROJECT_PATH}
       - ./build/php/local.ini:/usr/local/etc/php/conf.d/local.ini
     networks:
-      - laravel-network
+      local:
+        aliases:
+          - ${NETWORK}
 
   laraveldb:
-    image: mysql:5.7.22
-    container_name: laraveldb
+    image: mysql:${MYSQL_DATABASE}
+    container_name: ${CONTAINER_NAME_PREFIX}db
     restart: unless-stopped
     ports:
-      - "33061:3306"
+      - ${DB_PORT}:3306
     environment:
-      MYSQL_DATABASE: laravel_db
-      MYSQL_ROOT_PASSWORD: P@ssw0rd
-      MYSQL_USER: laravel_user
-      MYSQL_USER_PASSWORD: userP@ssw0rd
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_USER_PASSWORD: ${MYSQL_USER_PASSWORD}
       SERVICE_TAGS: dev
       SERVICE_NAME: mysql
     volumes:
       - laraveldb:/var/lib/mysql/
       - ./build/mysql/my.cnf:/etc/mysql/my.cnf
     networks:
-      - laravel-network
-
+      local:
+        aliases:
+          - ${NETWORK}
+  
   laravelweb:
     image: nginx
-    container_name: laravelweb
+    container_name: ${CONTAINER_NAME_PREFIX}web
     ports:
-      - "8081:80"
-      #- "443:443"
+      - ${NGINX_HTTP_PORT}:80
+      #- ${NGINX_HTTPS_PORT}:443
     volumes:
       - ./build/nginx/conf.d/:/etc/nginx/conf.d/
-      - ./code:/var/www
+      - ./code:${PROJECT_PATH}:consistent
       - ./build/nginx/log:/var/log/nginx
     depends_on:
       - laravelapp
     networks:
-      - laravel-network
+      local:
+        aliases:
+          - ${NETWORK}
 
   laravelredis:
     image: redis
     volumes:
         - ./build/data/redis:/datadoc
-    container_name: laravelredis
+    container_name: ${CONTAINER_NAME_PREFIX}redis
     ports:
         - "6379:6379"
     networks:
-        - laravel-network   
+      local:
+        aliases:
+          - ${NETWORK}
 #Docker Networks
 networks:
-  laravel-network:
-    driver: bridge
+  local:
+    name: ${NETWORK}
 #Volumes
 volumes:
   laraveldb:
-    driver: local
+    name: ${CONTAINER_NAME_PREFIX}db
