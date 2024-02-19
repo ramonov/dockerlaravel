@@ -4,6 +4,7 @@ LABEL maintainer="rajshakya2000@gmail.com"
 
 ARG PROJECT_PATH=/var/www
 ARG INSTALL_NODEJS=false
+ARG USERID=1000
 
 ENV PROJECT_PATH=$PROJECT_PATH
 ENV INSTALL_NODEJS=${INSTALL_NODEJS}
@@ -41,13 +42,13 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 RUN rm -rf /var/lib/apt/lists/ && curl -sL https://deb.nodesource.com/setup_14.x | bash -
 
 #Installing nodejs
-RUN if [ "${INSTALL_NODEJS}" = "true" ]; then apt-get install nodejs -y ; fi
+RUN if [ "${INSTALL_NODEJS}" = "true" ]; then apt-get install npm -y ; fi
 #Install node modules if package.json is available
 RUN if ["${INSTALL_NODEJS}" = "true"]  && [-f package.json]; then npm install ; fi
 
 # Allow container to write on host
-RUN groupadd -g 1000 www
-RUN useradd -u 1000 -ms /bin/bash -g www www
+RUN groupadd -g ${USERID} www
+RUN useradd -u ${USERID} -ms /bin/bash -g www www
 
 # Change current user to www
 USER www
