@@ -10,6 +10,7 @@ services:
         PROJECT_PATH: ${PROJECT_PATH}
         PHP_FPM_VERSION: ${PHP_FPM_VERSION}
         INSTALL_NODEJS: ${INSTALL_NODEJS}
+        USERID: ${USERID}
     restart: unless-stopped
     tty: true
     working_dir: ${PROJECT_PATH}
@@ -38,8 +39,10 @@ services:
       SERVICE_TAGS: dev
       SERVICE_NAME: mysql
     volumes:
-      - laraveldb:/var/lib/mysql/
-      - ./build/mysql/my.cnf:/etc/mysql/my.cnf
+      - 'laraveldb:/var/lib/mysql/'
+      - './build/mysql/my.cnf:/etc/mysql/my.cnf'
+      - './build/mysql/init/createuser.sh:/docker-entrypoint-initdb.d/10-createuser.sh'
+
     networks:
       local:
         aliases:
@@ -69,11 +72,35 @@ services:
         - ./build/data/redis:/datadoc
     container_name: ${CONTAINER_NAME_PREFIX}redis
     ports:
-        - "6379:6379"
+        - "${FORWARD_REDIS_PORT:-6379}:6379"
     networks:
       local:
         aliases:
           - ${NETWORK}
+
+  mailpit:
+        image: 'axllent/mailpit:latest'
+        container_name: ${CONTAINER_NAME_PREFIX}mailpit
+        ports:
+            - '${FORWARD_MAILPIT_PORT:-1025}:1025'
+            - '${FORWARD_MAILPIT_DASHBOARD_PORT:-8025}:8025'
+        networks:
+            local:
+              aliases:
+                - ${NETWORK}
+  
+  selenium:
+      image: selenium/standalone-chrome
+      container_name: ${CONTAINER_NAME_PREFIX}selenium
+      extra_hosts:
+          - 'host.docker.internal:host-gateway'
+      volumes:
+          - '/dev/shm:/dev/shm'
+      networks:
+        local:
+          aliases:
+            - ${NETWORK}
+
 #Docker Networks
 networks:
   local:
