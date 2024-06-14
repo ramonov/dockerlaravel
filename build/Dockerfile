@@ -1,4 +1,4 @@
-ARG PHP_FPM_VERSION=7.4-fpm
+ARG PHP_FPM_VERSION=8.2-fpm
 FROM php:$PHP_FPM_VERSION
 LABEL maintainer="rajshakya2000@gmail.com"
 
