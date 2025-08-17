@@ -39,10 +39,10 @@ RUN docker-php-ext-install gd
 # Installing composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-RUN rm -rf /var/lib/apt/lists/ && curl -sL https://deb.nodesource.com/setup_14.x | bash -
+RUN rm -rf /var/lib/apt/lists/ && curl -sL https://deb.nodesource.com/setup_22.x | bash -
 
 #Installing nodejs
-RUN if [ "${INSTALL_NODEJS}" = "true" ]; then apt-get install npm -y ; fi
+RUN if [ "${INSTALL_NODEJS}" = "true" ]; then apt-get install nodejs -y ; fi
 #Install node modules if package.json is available
 RUN if ["${INSTALL_NODEJS}" = "true"]  && [-f package.json]; then npm install ; fi
 
