@@ -11,11 +11,11 @@ clean:
 
 # Rebuild Docker image and container with Docker compose
 dev-rebuild:
-	docker-compose -f docker-compose.yml up --detach --build
+	docker compose -f docker-compose.yml up --detach --build
 
 # Start Docker container with Docker compose
 dev-start:
-	docker-compose -f docker-compose.yml up --detach
+	docker compose -f docker-compose.yml up --detach
 
 # Build Docker image
 image:
@@ -32,4 +32,4 @@ ssh:
 
 # Stop Docker container
 stop:
-	docker-compose down
+	docker compose down
