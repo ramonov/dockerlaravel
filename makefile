@@ -30,6 +30,10 @@ publish:
 ssh:
 	docker exec -t -i ${CONTAINER_NAME_PREFIX}app bash
 
+# Access with root previledge Docker container terminal.
+ssh-root:
+	docker exec -u root -t -i ${CONTAINER_NAME_PREFIX}app bash
+
 # Stop Docker container
 stop:
 	docker compose down
